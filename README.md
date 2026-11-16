@@ -171,7 +171,8 @@ Bewusste, dokumentierte Abweichungen vom Webplayer:
 - **„Vorheriger“** und **„Stopp“** sind zusätzliche Bedienelemente; „Vorheriger“ wählt nur aus und
   startet nichts.
 - **Zeitanzeige in Echtzeit**: Position und Dauer werden durch das Tempo geteilt, damit sie zu
-  `durationMs` aus dem Manifest passen (der Webplayer zeigt Medienzeit).
+  `durationMs` aus dem Manifest passen (der Webplayer zeigt Medienzeit). Wie im Webplayer hat die
+  tatsächliche Mediendauer Vorrang, sobald die Datei geladen ist; `durationMs` gilt bis dahin.
 - **Unterbrechungen**: nach Anruf/fremdem Audio wird nie automatisch fortgesetzt.
 
 **Notwendige API-Anpassungen an CHAPEL: keine.** Alle benötigten Endpunkte existieren. Optional
@@ -421,6 +422,21 @@ HTTP-Verbindungsversuch über `HttpOverrides` blockiert und gezählt.
 
 Die native Audioausgabe (`JustAudioEngine`) wird in den Tests durch eine Fake-Engine ersetzt; sie ist
 nur auf einem Gerät/Simulator prüfbar.
+
+### Manuell auf Android geprüft
+
+Release-APK auf einem Android-Emulator (Pixel 7, API 35) gegen den simulierten CHAPEL-Server mit echten
+MP3-Dateien:
+
+- Servereingabe inkl. HTTP-Warnung, Anmeldung, Paketliste, Mehrfachauswahl, Download und Prüfung
+- Kaltstart im **Flugmodus** bei gestopptem Server: Bibliothek vollständig verfügbar
+- Echte Audioausgabe (`USAGE_MEDIA`/`CONTENT_TYPE_MUSIC`), automatischer Stopp am Titelende, Auswahl
+  springt über den leeren Schritt, danach läuft nachweislich kein Player
+- Wiedergabe läuft bei **gesperrtem Gerät** weiter
+- **Eingehender Anruf** (Emulator-GSM): Pause, nach Anrufende kein Fortsetzen, Hinweis im Bedienfeld
+- Fortschritt bleibt über ein App-Update hinweg erhalten; Hell- und Dunkelmodus
+
+Ein iOS-Gerätetest steht aus (siehe [Bekannte Einschränkungen](#bekannte-einschränkungen)).
 
 ## Continuous Integration
 
