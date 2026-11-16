@@ -116,7 +116,15 @@ void main() {
     await tester.tap(find.text('Gottesdienste laden'));
     await settle(tester);
     expect(find.text('Mit CHAPEL verbinden'), findsOneWidget);
-    await tester.runAsync(() => dir.delete(recursive: true));
+    await tester.pumpWidget(const SizedBox());
+    await settle(tester);
+    await tester.runAsync(() async {
+      try {
+        await dir.delete(recursive: true);
+      } on FileSystemException {
+        // Temporäres Verzeichnis – Aufräumen ist nicht testrelevant.
+      }
+    });
   });
 
   testWidgets('Wiedergabe: Play → Titelende → Stopp, kein Autoplay', (
@@ -164,9 +172,16 @@ void main() {
 
     await tester.tap(find.byType(BackButton));
     await settle(tester);
+    // Widget-Baum abbauen und ausstehende Ein-/Ausgaben auslaufen lassen.
+    // Hier nicht auf Futures aus der Fake-Async-Zone warten (Deadlock-Gefahr).
+    await tester.pumpWidget(const SizedBox());
+    await settle(tester);
     await tester.runAsync(() async {
-      await s.progress.idle;
-      await dir.delete(recursive: true);
+      try {
+        await dir.delete(recursive: true);
+      } on FileSystemException {
+        // Temporäres Verzeichnis – Aufräumen ist nicht testrelevant.
+      }
     });
   });
 }
