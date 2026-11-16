@@ -5,6 +5,7 @@ import 'package:url_launcher/url_launcher.dart';
 import '../../app/app_scope.dart';
 import '../../auth/account_controller.dart';
 import '../format.dart';
+import '../palettes.dart';
 import '../theme.dart';
 import '../widgets/common.dart';
 import 'library_screen.dart' show adaptiveDialogAction;
@@ -157,6 +158,20 @@ class _SettingsScreenState extends State<SettingsScreen> {
                               settings.setThemeMode(s.first),
                         ),
                       ),
+                    ],
+                  ),
+                  GroupedSection(
+                    header: 'Farbschema',
+                    footer:
+                        'Alle Schemata sind in Hell und Dunkel auf gute '
+                        'Lesbarkeit geprüft (Kontrast mindestens 4,5 : 1).',
+                    children: [
+                      for (final scheme in AppColorScheme.values)
+                        _SchemeTile(
+                          scheme: scheme,
+                          selected: settings.colorScheme == scheme,
+                          onTap: () => settings.setColorScheme(scheme),
+                        ),
                     ],
                   ),
                   GroupedSection(
@@ -340,5 +355,77 @@ class _SettingsScreenState extends State<SettingsScreen> {
       await account.logout();
       if (context.mounted) AppScope.of(context).library.clearRemote();
     }
+  }
+}
+
+class _SchemeTile extends StatelessWidget {
+  const _SchemeTile({
+    required this.scheme,
+    required this.selected,
+    required this.onTap,
+  });
+
+  final AppColorScheme scheme;
+  final bool selected;
+  final VoidCallback onTap;
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    final light = scheme.colors(Brightness.light);
+    final dark = scheme.colors(Brightness.dark);
+    return Semantics(
+      inMutuallyExclusiveGroup: true,
+      selected: selected,
+      button: true,
+      label: '${scheme.label}, ${scheme.description}',
+      excludeSemantics: true,
+      child: ListTile(
+        onTap: onTap,
+        minTileHeight: 64,
+        leading: _Swatch(
+          colors: [light.accentContainer, light.accent, dark.accent],
+        ),
+        title: Text(scheme.label),
+        subtitle: Text(scheme.description),
+        trailing: AnimatedOpacity(
+          opacity: selected ? 1 : 0,
+          duration: const Duration(milliseconds: 150),
+          child: Icon(Icons.check_rounded, color: theme.colorScheme.primary),
+        ),
+      ),
+    );
+  }
+}
+
+/// Drei überlappende Farbpunkte: heller Container, Akzent hell, Akzent dunkel.
+class _Swatch extends StatelessWidget {
+  const _Swatch({required this.colors});
+  final List<Color> colors;
+
+  @override
+  Widget build(BuildContext context) {
+    final border = Theme.of(context).colorScheme.outlineVariant;
+    return SizedBox(
+      width: 52,
+      height: 28,
+      child: Stack(
+        children: [
+          for (var i = 0; i < colors.length; i++)
+            Positioned(
+              left: i * 12.0,
+              child: Container(
+                width: 28,
+                height: 28,
+                decoration: BoxDecoration(
+                  color: colors[i],
+                  shape: BoxShape.circle,
+                  border: Border.all(color: border, width: 1),
+                ),
+              ),
+            ),
+        ],
+      ),
+    );
   }
 }

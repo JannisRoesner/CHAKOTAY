@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'key_value_store.dart';
 
 import '../api/models.dart';
+import '../ui/palettes.dart';
 
 enum LibrarySort { upcomingFirst, newestFirst, oldestFirst }
 
@@ -22,6 +23,7 @@ class SettingsStore extends ChangeNotifier {
   static const _kAllowInsecure = 'server.allowInsecure';
   static const _kUser = 'account.user';
   static const _kTheme = 'ui.themeMode';
+  static const _kScheme = 'ui.colorScheme';
   static const _kKeepAwake = 'playback.keepScreenOn';
   static const _kSort = 'library.sort';
   static const _kRemote = 'library.remoteVersions';
@@ -31,6 +33,7 @@ class SettingsStore extends ChangeNotifier {
   bool allowInsecure = false;
   ChapelUser? cachedUser;
   ThemeMode themeMode = ThemeMode.system;
+  AppColorScheme colorScheme = AppColorScheme.chapelGreen;
   bool keepScreenOn = true;
   LibrarySort sort = LibrarySort.upcomingFirst;
 
@@ -58,6 +61,7 @@ class SettingsStore extends ChangeNotifier {
       themeMode =
           ThemeMode.values.asNameMap()[await _prefs.getString(_kTheme) ?? ''] ??
           ThemeMode.system;
+      colorScheme = AppColorScheme.parse(await _prefs.getString(_kScheme));
       keepScreenOn = await _prefs.getBool(_kKeepAwake) ?? true;
       sort =
           LibrarySort.values.asNameMap()[await _prefs.getString(_kSort) ??
@@ -105,6 +109,12 @@ class SettingsStore extends ChangeNotifier {
     themeMode = mode;
     notifyListeners();
     await _prefs.setString(_kTheme, mode.name);
+  }
+
+  Future<void> setColorScheme(AppColorScheme value) async {
+    colorScheme = value;
+    notifyListeners();
+    await _prefs.setString(_kScheme, value.name);
   }
 
   Future<void> setKeepScreenOn(bool value) async {

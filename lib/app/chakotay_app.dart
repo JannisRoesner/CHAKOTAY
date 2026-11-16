@@ -21,8 +21,8 @@ class ChakotayApp extends StatelessWidget {
         builder: (context, _) => MaterialApp(
           title: 'CHAKOTAY',
           debugShowCheckedModeBanner: false,
-          theme: buildTheme(Brightness.light),
-          darkTheme: buildTheme(Brightness.dark),
+          theme: buildTheme(Brightness.light, services.settings.colorScheme),
+          darkTheme: buildTheme(Brightness.dark, services.settings.colorScheme),
           themeMode: services.settings.themeMode,
           locale: const Locale('de'),
           supportedLocales: const [Locale('de')],

@@ -60,6 +60,7 @@ erst auf Knopfdruck*.
   Pause, Nächster, Vorheriger, Stopp), deutliche Statusanzeige, automatischer Stopp am Titelende,
   leere Schritte sichtbar und übersprungen, Tempo tonhöhenerhaltend, Fortschritt gespeichert.
 - **Einstellungen**: Serveradresse, Verbindungsstatus, Benutzer, An-/Abmelden, Hell/Dunkel/System,
+  fünf Farbschemata wie in CHAPEL,
   „Bildschirm aktiv halten“, belegter Speicher, Version, Quellcode, Lizenzen.
 - Hell- und Dunkelmodus, dynamische Schriftgrößen, Screenreader-Beschriftungen, Hoch- und Querformat,
   Telefon und Tablet (Navigation Rail und zweispaltige Wiedergabe ab 720/840 pt Breite).
@@ -402,7 +403,7 @@ flutter analyze
 dart format --output=none --set-exit-if-changed lib test
 ```
 
-Abgedeckt (82 Tests):
+Abgedeckt (94 Tests):
 
 | Bereich | Datei |
 |---|---|
@@ -413,6 +414,7 @@ Abgedeckt (82 Tests):
 | Fortschritt speichern/laden, Reset bei Versionswechsel, 24-h-Ablauf | `test/playback/progress_store_test.dart` |
 | Playback-State-Machine: Auto-Stopp, kein Autoplay, Nächster/Vorheriger, leere Schritte, Unterbrechung, Fehler, Tempo | `test/playback/player_controller_test.dart` |
 | Widget-Tests: Empty State, Wiedergabeansicht mit Titelende | `test/ui/player_screen_test.dart` |
+| Kontrast aller Farbschemata (WCAG AA, Hell und Dunkel), Speichern der Auswahl | `test/ui/palettes_test.dart` |
 | **Integration**: Anmeldung am simulierten CHAPEL-Server → Download → Validierung → Netzwerk aus → Öffnen → Abspielen → Stopp am Titelende → nächster Titel nur per Aktion; fehlgeschlagene/abgebrochene Updates; abgelaufene Sitzung | `test/integration/offline_flow_test.dart` |
 
 Der simulierte CHAPEL-Server (`test/support/fake_chapel_server.dart`) ist ein echter lokaler
@@ -457,8 +459,14 @@ Version siehe `skills-lock.json`):
 
 - **Purpose/Simplicity**: Die Wiedergabe ist auf Ablauf + zwei große Primäraktionen (72 pt hoch)
   reduziert; kein Scrubbing, damit nichts versehentlich verstellt wird.
-- **Tokens** (`lib/ui/theme.dart`): CHAPEL-Grün, für Text kontrastgeprüft – Akzent `#007F45` auf
-  Weiß 5,4:1, `#2BD98A` auf `#0E1311` 10,1:1; Liturgie-Grau `#5B6B64` 5,6:1; Warnung `#9A5B00` 5,3:1.
+- **Farbschemata** (`lib/ui/palettes.dart`, Auswahl unter *Einstellungen → Farbschema*): die fünf
+  CHAPEL-Schemata *Chapel Grün*, *Liturgisch Blau*, *Goldenes Ambiente*, *Advent Violett* und
+  *Waldgrün*. Die Werte sind gegenüber CHAPEL für Text nachgedunkelt (hell) bzw. aufgehellt (dunkel),
+  die neutralen Flächen leicht im Farbton des Schemas eingefärbt, das Dunkel nie reinschwarz.
+  Jede Text/Fläche-Kombination erreicht in Hell und Dunkel mindestens 4,5:1 – abgesichert durch
+  `test/ui/palettes_test.dart`. Beispiele (Hell · Dunkel): Akzent auf Karte Grün 5,1 · 9,0,
+  Blau 6,7 · 7,4, Gold 6,3 · 9,0, Violett 7,1 · 8,0, Teal 5,5 · 8,9. Im goldenen Schema ist die
+  Warnfarbe ein Rostrot, damit „Update verfügbar“ nicht mit dem Akzent verwechselt wird.
 - **Typografie**: Systemschrift (SF auf iOS, Roboto auf Android), Fließtext 17 pt, nichts unter 13 pt
   außer den Tab-Beschriftungen (12 pt, wie System-Tab-Bars); alles skaliert mit der Systemschriftgröße.
 - **Touch-Ziele** ≥ 44 pt (Listen ≥ 52 pt, Schritte ≥ 72 pt).

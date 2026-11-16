@@ -1,19 +1,13 @@
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 
+import 'palettes.dart';
+
 /// Design-Tokens von CHAKOTAY.
 ///
-/// Abgeleitet vom CHAPEL-Grün, aber für Text auf Flächen kontrastgeprüft
-/// (WCAG / HIG `color.md`: 4,5:1 für Text bis 17 pt):
-///
-/// | Rolle            | Hell      | Dunkel    | Kontrast |
-/// |------------------|-----------|-----------|----------|
-/// | accent           | #007F45   | #2BD98A   | 5,4:1 auf Weiß · 10,1:1 auf #0E1311 |
-/// | onAccent         | #FFFFFF   | #04120B   | 5,4:1 · 10,1:1 |
-/// | liturgy (Signal) | #5B6B64   | #A3B5AC   | 5,6:1 · 8,9:1 |
-/// | surface          | #F4F6F5   | #0E1311   | – |
-/// | card             | #FFFFFF   | #18201C   | – |
-/// | warning          | #9A5B00   | #F5B048   | 5,3:1 · 9,8:1 |
+/// Die Farbwerte stammen aus den kontrastgeprüften Schemata in
+/// `palettes.dart` (WCAG AA ≥ 4,5:1 für Text bis 17 pt, HIG `color.md`).
+/// Jedes Schema liefert eine helle und eine dunkle Variante.
 ///
 /// Signatur: das „Kalenderblatt“ – Datumskachel in Liturgiefarbe, die jeden
 /// Gottesdienst wie im Kirchenkalender verortet.
@@ -40,28 +34,16 @@ class ChakotayColors extends ThemeExtension<ChakotayColors> {
   final Color card;
   final Color separator;
 
-  static const light = ChakotayColors(
-    liturgy: Color(0xFF5B6B64),
-    liturgyContainer: Color(0xFFE6ECE9),
-    song: Color(0xFF007F45),
-    songContainer: Color(0xFFDDF5E8),
-    warning: Color(0xFF9A5B00),
-    warningContainer: Color(0xFFFFF1DC),
-    success: Color(0xFF007F45),
-    card: Color(0xFFFFFFFF),
-    separator: Color(0x1F0E1311),
-  );
-
-  static const dark = ChakotayColors(
-    liturgy: Color(0xFFA3B5AC),
-    liturgyContainer: Color(0xFF232D29),
-    song: Color(0xFF2BD98A),
-    songContainer: Color(0xFF103223),
-    warning: Color(0xFFF5B048),
-    warningContainer: Color(0xFF3A2A10),
-    success: Color(0xFF2BD98A),
-    card: Color(0xFF18201C),
-    separator: Color(0x2EFFFFFF),
+  factory ChakotayColors.from(SchemeColors c) => ChakotayColors(
+    liturgy: c.liturgy,
+    liturgyContainer: c.liturgyContainer,
+    song: c.accent,
+    songContainer: c.accentContainer,
+    warning: c.warning,
+    warningContainer: c.warningContainer,
+    success: c.accent,
+    card: c.card,
+    separator: c.onSurface.withValues(alpha: 0.12),
   );
 
   static ChakotayColors of(BuildContext context) =>
@@ -95,26 +77,26 @@ class ChakotayColors extends ThemeExtension<ChakotayColors> {
   }
 }
 
-ThemeData buildTheme(Brightness brightness) {
+ThemeData buildTheme(
+  Brightness brightness, [
+  AppColorScheme colorScheme = AppColorScheme.chapelGreen,
+]) {
   final isDark = brightness == Brightness.dark;
-  final tokens = isDark ? ChakotayColors.dark : ChakotayColors.light;
-  final accent = isDark ? const Color(0xFF2BD98A) : const Color(0xFF007F45);
-  final surface = isDark ? const Color(0xFF0E1311) : const Color(0xFFF4F6F5);
-  final onSurface = isDark ? const Color(0xFFE9EFEC) : const Color(0xFF111714);
-  final secondaryText = isDark
-      ? const Color(0xFFA0ACA6)
-      : const Color(0xFF5A6560);
+  final c = colorScheme.colors(brightness);
+  final tokens = ChakotayColors.from(c);
+  final accent = c.accent;
+  final surface = c.surface;
+  final onSurface = c.onSurface;
+  final secondaryText = c.secondary;
 
   final scheme = ColorScheme(
     brightness: brightness,
     primary: accent,
-    onPrimary: isDark ? const Color(0xFF04120B) : Colors.white,
+    onPrimary: c.onAccent,
     primaryContainer: tokens.songContainer,
-    onPrimaryContainer: isDark
-        ? const Color(0xFFBDF5D8)
-        : const Color(0xFF00391E),
+    onPrimaryContainer: c.onAccentContainer,
     secondary: tokens.liturgy,
-    onSecondary: isDark ? const Color(0xFF0E1311) : Colors.white,
+    onSecondary: isDark ? c.surface : Colors.white,
     secondaryContainer: tokens.liturgyContainer,
     onSecondaryContainer: onSurface,
     error: isDark ? const Color(0xFFFF8A80) : const Color(0xFFB3261E),
@@ -125,13 +107,9 @@ ThemeData buildTheme(Brightness brightness) {
     surfaceContainerLowest: tokens.card,
     surfaceContainerLow: tokens.card,
     surfaceContainer: tokens.card,
-    surfaceContainerHigh: isDark
-        ? const Color(0xFF202924)
-        : const Color(0xFFEDF1EF),
-    surfaceContainerHighest: isDark
-        ? const Color(0xFF29332E)
-        : const Color(0xFFE3E9E6),
-    outline: isDark ? const Color(0xFF5E6B65) : const Color(0xFF8A9590),
+    surfaceContainerHigh: c.high,
+    surfaceContainerHighest: c.highest,
+    outline: c.outline,
     outlineVariant: tokens.separator,
   );
 
@@ -182,9 +160,7 @@ ThemeData buildTheme(Brightness brightness) {
       centerTitle: false,
     ),
     navigationBarTheme: NavigationBarThemeData(
-      backgroundColor: isDark
-          ? const Color(0xF2131A16)
-          : const Color(0xF2FAFBFA),
+      backgroundColor: c.nav.withValues(alpha: 0.95),
       indicatorColor: tokens.songContainer,
       surfaceTintColor: Colors.transparent,
       height: 64,
