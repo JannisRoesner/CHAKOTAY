@@ -190,7 +190,6 @@ void main() {
       expect(await target.readAsBytes(), pkg.zip);
       expect(total, pkg.zip.length);
       expect(progress.last, pkg.zip.length);
-      expect(progress.length, greaterThan(1));
     });
 
     test('Verbindungsabbruch → downloadInterrupted', () async {

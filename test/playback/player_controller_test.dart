@@ -123,7 +123,14 @@ void main() {
     // Anzeige in Echtzeit: Medienzeit / Tempo.
     engine.emitPosition(const Duration(seconds: 46));
     expect(c.position.value.inMilliseconds, closeTo(50000, 1));
-    expect(c.currentDuration, const Duration(milliseconds: 65217));
+    // Mediendauer (60 s) hat Vorrang, umgerechnet auf das Tempo.
+    expect(c.currentDuration!.inMilliseconds, closeTo(65217, 1));
+    await c.stop();
+    expect(
+      c.currentDuration,
+      const Duration(milliseconds: 65217),
+      reason: 'ungeladen: durationMs aus dem Manifest',
+    );
   });
 
   test('letzter Titel → finishedLast, kein weiterer Start', () async {

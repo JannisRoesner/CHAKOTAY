@@ -40,8 +40,8 @@ class FakeChapelServer {
   /// Verzögerung je Chunk beim Download (für Abbruchtests).
   Duration chunkDelay = Duration.zero;
 
-  static Future<FakeChapelServer> start() async {
-    final server = await HttpServer.bind(InternetAddress.loopbackIPv4, 0);
+  static Future<FakeChapelServer> start({int port = 0}) async {
+    final server = await HttpServer.bind(InternetAddress.loopbackIPv4, port);
     final fake = FakeChapelServer._(server);
     server.listen(fake._handle);
     return fake;

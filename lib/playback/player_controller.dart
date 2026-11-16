@@ -94,15 +94,21 @@ class PlayerController extends ChangeNotifier {
   bool _disposed = false;
 
   /// Gesamtdauer des aktuellen Schritts in Echtzeit.
+  ///
+  /// Wie im CHAPEL-Player (`NowPlayingBar.vue`) hat die tatsächliche
+  /// Mediendauer Vorrang; `durationMs` aus dem Manifest dient als Anzeige,
+  /// solange die Datei noch nicht geladen ist.
   Duration? get currentDuration {
     final step = currentStep;
     if (step == null || !step.isPlayable) return null;
+    final media = _loadedIndex == _currentIndex ? _mediaDuration : null;
+    if (media != null && media > Duration.zero) {
+      return media * (1 / step.playbackRate);
+    }
     if (step.durationMs != null) {
       return Duration(milliseconds: step.durationMs!);
     }
-    final media = _loadedIndex == _currentIndex ? _mediaDuration : null;
-    if (media == null) return null;
-    return media * (1 / step.playbackRate);
+    return null;
   }
 
   bool get canPlay =>

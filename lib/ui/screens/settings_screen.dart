@@ -130,6 +130,11 @@ class _SettingsScreenState extends State<SettingsScreen> {
                         padding: const EdgeInsets.all(12),
                         child: SegmentedButton<ThemeMode>(
                           showSelectedIcon: false,
+                          expandedInsets: EdgeInsets.zero,
+                          style: SegmentedButton.styleFrom(
+                            selectedBackgroundColor: tokens.songContainer,
+                            selectedForegroundColor: theme.colorScheme.primary,
+                          ),
                           segments: const [
                             ButtonSegment(
                               value: ThemeMode.system,
