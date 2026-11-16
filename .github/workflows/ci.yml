@@ -1,0 +1,83 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+  workflow_dispatch:
+
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+env:
+  FLUTTER_VERSION: "3.41.7"
+
+jobs:
+  check:
+    name: Format, Analyse & Tests
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: subosito/flutter-action@v2
+        with:
+          flutter-version: ${{ env.FLUTTER_VERSION }}
+          channel: stable
+          cache: true
+      - run: flutter pub get
+      - name: Formatierung prüfen
+        run: dart format --output=none --set-exit-if-changed lib test
+      - name: Statische Analyse
+        run: flutter analyze
+      - name: Tests
+        run: flutter test --reporter expanded
+
+  android:
+    name: Android-Build
+    needs: check
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: "17"
+      - uses: subosito/flutter-action@v2
+        with:
+          flutter-version: ${{ env.FLUTTER_VERSION }}
+          channel: stable
+          cache: true
+      - run: flutter pub get
+      # Ohne Signing-Secrets wird mit dem Debug-Schlüssel signiert (installierbar
+      # zum Testen, nicht für den Play Store). Siehe README „Release-Builds“.
+      - name: Release-APK bauen
+        run: flutter build apk --release
+      - uses: actions/upload-artifact@v4
+        with:
+          name: chakotay-android-apk
+          path: build/app/outputs/flutter-apk/app-release.apk
+          if-no-files-found: error
+
+  ios:
+    name: iOS-Build (ohne Signierung)
+    needs: check
+    runs-on: macos-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: subosito/flutter-action@v2
+        with:
+          flutter-version: ${{ env.FLUTTER_VERSION }}
+          channel: stable
+          cache: true
+      - run: flutter pub get
+      - name: iOS-App bauen (no-codesign)
+        run: flutter build ios --release --no-codesign
+      - name: App-Bundle packen
+        run: |
+          cd build/ios/iphoneos
+          zip -qry ../chakotay-ios-unsigned.zip Runner.app
+      - uses: actions/upload-artifact@v4
+        with:
+          name: chakotay-ios-unsigned
+          path: build/ios/chakotay-ios-unsigned.zip
+          if-no-files-found: error
