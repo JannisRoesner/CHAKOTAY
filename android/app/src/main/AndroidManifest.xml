@@ -1,6 +1,10 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android">
+    <!-- Verbindung zum CHAPEL-Server (nur zum Herunterladen; Wiedergabe ist offline). -->
+    <uses-permission android:name="android.permission.INTERNET" />
     <application
-        android:label="chakotay"
+        android:label="CHAKOTAY"
+        android:allowBackup="false"
+        android:networkSecurityConfig="@xml/network_security_config"
         android:name="${applicationName}"
         android:icon="@mipmap/ic_launcher">
         <activity

@@ -43,7 +43,9 @@ dependencies:
   url_launcher: ^6.3.3
   wakelock_plus: ^1.7.0
   package_info_plus: ^10.2.2
-  intl: ^0.20.3
+  intl: ^0.20.2
+  flutter_localizations:
+    sdk: flutter
 
 dev_dependencies:
   flutter_test:
