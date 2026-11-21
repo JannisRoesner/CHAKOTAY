@@ -5,6 +5,7 @@ import 'package:flutter/services.dart';
 import 'package:wakelock_plus/wakelock_plus.dart';
 
 import '../../app/app_scope.dart';
+import '../../packages/element_type.dart';
 import '../../packages/manifest.dart';
 import '../../packages/package_repository.dart';
 import '../../playback/audio_engine.dart';
@@ -259,6 +260,7 @@ class _StepList extends StatelessWidget {
               child: _StepTile(
                 index: i,
                 step: steps[i],
+                elementType: controller.package.elementTypeOf(steps[i].kind),
                 isCurrent: i == controller.currentIndex,
                 isPlaying: i == controller.currentIndex && controller.isPlaying,
                 played: controller.playedIndices.contains(i),
@@ -278,6 +280,7 @@ class _StepTile extends StatelessWidget {
   const _StepTile({
     required this.index,
     required this.step,
+    required this.elementType,
     required this.isCurrent,
     required this.isPlaying,
     required this.played,
@@ -286,6 +289,7 @@ class _StepTile extends StatelessWidget {
 
   final int index;
   final PackageStep step;
+  final ElementType elementType;
   final bool isCurrent;
   final bool isPlaying;
   final bool played;
@@ -295,9 +299,8 @@ class _StepTile extends StatelessWidget {
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
     final tokens = ChakotayColors.of(context);
-    final isLiturgy = step.kind == StepKind.liturgy;
-    final kindColor = isLiturgy ? tokens.liturgy : tokens.song;
-    final kindLabel = isLiturgy ? 'Liturgie' : 'Lied';
+    final kindColor = elementType.toneColor(context);
+    final kindLabel = elementType.label;
     final empty = !step.isPlayable;
     final duration = step.durationMs == null
         ? null
@@ -556,9 +559,11 @@ class _ControlPanel extends StatelessWidget {
         Text(
           step?.label ?? '—',
           style: theme.textTheme.bodyMedium?.copyWith(
-            color: step?.kind == StepKind.liturgy
-                ? tokens.liturgy
-                : tokens.song,
+            color: step == null
+                ? tokens.song
+                : controller.package
+                      .elementTypeOf(step.kind)
+                      .toneColor(context),
             fontWeight: FontWeight.w600,
           ),
           maxLines: 1,

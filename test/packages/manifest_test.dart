@@ -26,7 +26,7 @@ void main() {
     expect(m.service.id, 12);
     expect(m.service.name, '1. Advent');
     expect(m.steps, hasLength(4));
-    expect(m.steps[0].kind, StepKind.liturgy);
+    expect(m.steps[0].kind, 'liturgy');
     expect(m.steps[1].audio, isNull);
     expect(m.steps[1].isPlayable, isFalse);
     expect(m.steps[1].durationMs, isNull);
@@ -129,5 +129,45 @@ void main() {
     expect(again.steps.length, m.steps.length);
     expect(again.steps[2].playbackRate, 0.92);
     expect(again.steps[1].audio, isNull);
+  });
+
+  test('akzeptiert frei definierte Elementtypen (CHAPEL element_types)', () {
+    final m = PackageManifest.fromJson(
+      manifestJson(
+        steps: [
+          stepJson(
+            position: 0,
+            kind: 'voluntary',
+            label: 'Eingangsmusik',
+            audio: a1,
+          ),
+          stepJson(position: 1, kind: 'communion', label: 'Abendmahl'),
+          stepJson(
+            position: 2,
+            kind: 't-1a2b3c4d',
+            label: 'Kinderchor',
+            audio: a2,
+          ),
+        ],
+      ),
+    );
+    expect(m.steps.map((s) => s.kind), [
+      'voluntary',
+      'communion',
+      't-1a2b3c4d',
+    ]);
+    expect(m.steps[1].isPlayable, isFalse);
+  });
+
+  test('lehnt leere oder fehlende Schrittart ab', () {
+    for (final kind in ['', null, 42]) {
+      final json = manifestJson(steps: [stepJson(position: 0, audio: a1)]);
+      ((json['steps'] as List).first as Map)['kind'] = kind;
+      expect(
+        () => PackageManifest.fromJson(json),
+        throwsA(isA<ManifestFormatException>()),
+        reason: '$kind',
+      );
+    }
   });
 }

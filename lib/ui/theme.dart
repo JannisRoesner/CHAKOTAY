@@ -1,6 +1,7 @@
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 
+import '../packages/element_type.dart';
 import 'palettes.dart';
 
 /// Design-Tokens von CHAKOTAY.
@@ -238,4 +239,17 @@ ThemeData buildTheme(
     ),
     cupertinoOverrideTheme: CupertinoThemeData(primaryColor: accent),
   );
+}
+
+/// Farbe eines Elementtyps: Akzent (Lied), Liturgiefarbe oder neutral.
+/// Name **und** Farbe kennzeichnen die Art – nie die Farbe allein.
+extension ElementTypeColor on ElementType {
+  Color toneColor(BuildContext context) {
+    final tokens = ChakotayColors.of(context);
+    return switch (tone) {
+      ElementTone.accent => tokens.song,
+      ElementTone.liturgy => tokens.liturgy,
+      ElementTone.neutral => Theme.of(context).colorScheme.onSurfaceVariant,
+    };
+  }
 }

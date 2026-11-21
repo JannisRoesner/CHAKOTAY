@@ -37,21 +37,6 @@ class UnsupportedPackageVersionException implements Exception {
       'UnsupportedPackageVersionException: formatVersion=$formatVersion';
 }
 
-enum StepKind {
-  liturgy('liturgy'),
-  songSlot('songSlot');
-
-  const StepKind(this.wire);
-  final String wire;
-
-  static StepKind parse(Object? value) {
-    for (final kind in values) {
-      if (kind.wire == value) return kind;
-    }
-    throw ManifestFormatException('Unbekannte Schrittart: $value');
-  }
-}
-
 class PackageAudio {
   const PackageAudio({
     required this.file,
@@ -123,7 +108,10 @@ class PackageStep {
   });
 
   final int position;
-  final StepKind kind;
+
+  /// Schlüssel des CHAPEL-Elementtyps, z. B. `songSlot`, `liturgy`,
+  /// `voluntary` oder ein selbst angelegter Typ (`t-…`).
+  final String kind;
   final String label;
   final String? title;
   final String? composer;
@@ -149,7 +137,7 @@ class PackageStep {
     final durationRaw = json['durationMs'];
     return PackageStep(
       position: _int(json, 'position'),
-      kind: StepKind.parse(json['kind']),
+      kind: _kind(json['kind']),
       label: _string(json, 'label'),
       title: _optString(json, 'title'),
       composer: _optString(json, 'composer'),
@@ -163,7 +151,7 @@ class PackageStep {
 
   Map<String, Object?> toJson() => {
     'position': position,
-    'kind': kind.wire,
+    'kind': kind,
     'label': label,
     'title': title,
     'composer': composer,
@@ -312,6 +300,11 @@ bool isSafeAudioEntryName(String name) {
   final dot = base.lastIndexOf('.');
   if (dot < 0) return false;
   return allowedAudioExtensions.contains(base.substring(dot).toLowerCase());
+}
+
+String _kind(Object? value) {
+  if (value is String && value.isNotEmpty && value.length <= 64) return value;
+  throw ManifestFormatException('Ungültige Schrittart: $value');
 }
 
 Map<String, Object?> _map(Object? value, String field) {

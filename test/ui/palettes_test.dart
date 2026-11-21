@@ -25,6 +25,9 @@ void main() {
           'Text auf Akzentcontainer': (c.onAccentContainer, c.accentContainer),
           'Liturgie/Karte': (c.liturgy, c.card),
           'Liturgie/Liturgiecontainer': (c.liturgy, c.liturgyContainer),
+          // Typbezeichnungen auf dem hervorgehobenen (aktuellen) Schritt.
+          'Liturgie/Akzentcontainer': (c.liturgy, c.accentContainer),
+          'Neutraler Typ/Akzentcontainer': (c.secondary, c.accentContainer),
           'Sekundärtext/Fläche': (c.secondary, c.surface),
           'Sekundärtext/Karte': (c.secondary, c.card),
           'Text/Fläche': (c.onSurface, c.surface),

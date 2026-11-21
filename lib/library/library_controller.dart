@@ -255,6 +255,9 @@ class LibraryController extends ChangeNotifier {
     try {
       task.phase = DownloadPhase.downloading;
       notifyListeners();
+      // Namen/Farben der Schrittarten, damit sie offline angezeigt werden.
+      final elementTypes = await client.listElementTypes();
+      task.cancelToken.throwIfCancelled();
       final version = await client.downloadPackage(
         task.summary.serviceId,
         temp,
@@ -271,6 +274,7 @@ class LibraryController extends ChangeNotifier {
       final pkg = await installer.install(
         temp,
         serverOrigin: task.serverOrigin,
+        elementTypes: elementTypes,
         expectedServiceId: task.summary.serviceId,
         expectedVersion: version,
         cancelToken: task.cancelToken,

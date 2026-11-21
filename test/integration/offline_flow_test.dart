@@ -354,4 +354,86 @@ void main() {
     await player.play();
     expect(player.status, PlaybackStatus.playing);
   });
+
+  test(
+    'frei definierte Elementtypen: laden, offline anzeigen, abspielen',
+    () async {
+      final extra = fakeAudio(9, size: 20000);
+      server.addPackage(
+        FakePackage(
+          manifestJson(
+            serviceId: 20,
+            name: 'Familiengottesdienst',
+            version: 'fam1',
+            steps: [
+              stepJson(
+                position: 0,
+                kind: 'voluntary',
+                label: 'Eingangsmusik',
+                audio: extra,
+              ),
+              stepJson(position: 1, kind: 't-1a2b3c4d', label: 'Kinderchor'),
+              stepJson(
+                position: 2,
+                kind: 'communion',
+                label: 'Abendmahl',
+                audio: kyrie,
+              ),
+            ],
+          ),
+          [extra, kyrie],
+        ),
+      );
+      final settings = SettingsStore(MemoryKeyValueStore());
+      final account = AccountController(
+        settings: settings,
+        sessions: MemorySessionStore(),
+      );
+      await account.restore();
+      await account.setServer(server.baseUrl, allowInsecure: true);
+      await account.login('organist@gemeinde.de', 'geheim123');
+      final libraryRoot = Directory('${dir.path}/library');
+      final repo = PackageRepository(libraryRoot);
+      final library = LibraryController(
+        repository: repo,
+        installer: PackageInstaller(repo),
+        account: account,
+        settings: settings,
+      );
+      await library.load();
+      await library.refreshRemote();
+      library.download(library.remote!.where((s) => s.serviceId == 20));
+      await _waitForDownloads(library);
+      expect(
+        library.taskFor(packageKey(account.server!.origin, 20)),
+        isNull,
+        reason: 'Download darf nicht als beschädigt abgelehnt werden',
+      );
+
+      // Server weg – Typnamen kommen aus dem lokalen Datensatz.
+      await server.close();
+      final repo2 = PackageRepository(libraryRoot);
+      final pkg = (await repo2.loadAll()).single;
+      expect(pkg.elementTypeOf('voluntary').label, 'Ein-/Ausgang');
+      expect(pkg.elementTypeOf('t-1a2b3c4d').label, 'Kinderchor');
+      expect(pkg.elementTypeOf('communion').label, 'Abendmahl-Musik');
+
+      final engine = FakeAudioEngine();
+      final player = PlayerController(
+        package: pkg,
+        engine: engine,
+        resolveAudio: repo2.audioFile,
+      );
+      await player.init();
+      await player.play();
+      engine.complete();
+      await pumpEventQueue();
+      expect(
+        player.currentIndex,
+        2,
+        reason: 'leerer Kinderchor-Schritt übersprungen',
+      );
+      expect(engine.playCount, 1);
+    },
+  );
 }

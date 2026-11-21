@@ -148,6 +148,16 @@ void main() {
   group('Pakete', () {
     setUp(() => client.login('organist@gemeinde.de', 'geheim123'));
 
+    test('Elementtypen werden gelesen', () async {
+      final types = await client.listElementTypes();
+      expect(
+        types.keys,
+        containsAll(['songSlot', 'liturgy', 'voluntary', 't-1a2b3c4d']),
+      );
+      expect(types['t-1a2b3c4d']!.label, 'Kinderchor');
+      expect(types['liturgy']!.fixed, isTrue);
+    });
+
     test('Paketliste wird korrekt gelesen', () async {
       final list = await client.listPackages();
       final s = list.single;

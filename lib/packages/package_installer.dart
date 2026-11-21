@@ -4,6 +4,7 @@ import 'dart:math';
 
 import '../core/cancel_token.dart';
 import '../core/failures.dart';
+import 'element_type.dart';
 import 'manifest.dart';
 import 'package_repository.dart';
 import 'safe_zip_reader.dart';
@@ -61,6 +62,7 @@ class PackageInstaller {
   Future<LocalPackage> install(
     File zipFile, {
     required String serverOrigin,
+    Map<String, ElementType> elementTypes = const {},
     int? expectedServiceId,
     String? expectedVersion,
     CancelToken? cancelToken,
@@ -130,6 +132,10 @@ class PackageInstaller {
             zip,
             total,
             serverOrigin,
+            {
+              for (final step in manifest.steps)
+                step.kind: ?elementTypes[step.kind],
+            },
             cancelToken,
             onProgress,
           );
@@ -150,6 +156,7 @@ class PackageInstaller {
     SafeZipReader zip,
     int total,
     String serverOrigin,
+    Map<String, ElementType> elementTypes,
     CancelToken? cancelToken,
     void Function(int done, int total)? onProgress,
   ) async {
@@ -195,6 +202,7 @@ class PackageInstaller {
       serverOrigin: serverOrigin,
       manifest: manifest,
       installedAt: DateTime.now().toUtc(),
+      elementTypes: elementTypes,
     );
     await repository.commitLocked(pkg);
     await repository.collectGarbageLocked();

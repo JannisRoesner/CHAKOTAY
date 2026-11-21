@@ -4,6 +4,7 @@ import 'dart:io';
 
 import 'package:crypto/crypto.dart';
 
+import 'element_type.dart';
 import 'manifest.dart';
 
 /// Ein vollständig installierter, geprüfter Gottesdienst.
@@ -12,11 +13,18 @@ class LocalPackage {
     required this.serverOrigin,
     required this.manifest,
     required this.installedAt,
+    this.elementTypes = const {},
   });
 
   final String serverOrigin;
   final PackageManifest manifest;
   final DateTime installedAt;
+
+  /// Beim Download gespeicherte Elementtypen der verwendeten Schrittarten.
+  final Map<String, ElementType> elementTypes;
+
+  ElementType elementTypeOf(String kind) =>
+      resolveElementType(elementTypes, kind);
 
   int get serviceId => manifest.service.id;
   String get version => manifest.version;
@@ -26,6 +34,13 @@ class LocalPackage {
     serverOrigin: json['serverOrigin']! as String,
     installedAt: DateTime.parse(json['installedAt']! as String),
     manifest: PackageManifest.fromJson(json['manifest']),
+    elementTypes: {
+      for (final t
+          in (json['elementTypes'] as List? ?? const [])
+              .map(ElementType.tryParse)
+              .nonNulls)
+        t.key: t,
+    },
   );
 
   Map<String, Object?> toJson() => {
@@ -33,6 +48,7 @@ class LocalPackage {
     'serverOrigin': serverOrigin,
     'installedAt': installedAt.toUtc().toIso8601String(),
     'manifest': manifest.toJson(),
+    'elementTypes': [for (final t in elementTypes.values) t.toJson()],
   };
 }
 

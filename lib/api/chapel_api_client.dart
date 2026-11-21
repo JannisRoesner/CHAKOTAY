@@ -5,6 +5,7 @@ import 'dart:io';
 import '../auth/session_store.dart';
 import '../core/cancel_token.dart';
 import '../core/failures.dart';
+import '../packages/element_type.dart';
 import '../packages/manifest.dart';
 import 'models.dart';
 import 'server_address.dart';
@@ -152,6 +153,20 @@ class ChapelApiClient {
       for (final e in body)
         if (e is Map) PackageSummary.fromJson(e.cast<String, Object?>()),
     ];
+  }
+
+  /// `GET /api/element-types` – Namen und Farben der Schrittarten.
+  Future<Map<String, ElementType>> listElementTypes() async {
+    final response = await _send('GET', '/api/element-types');
+    final body = await _readJson(response);
+    _ensureSuccess(response, body);
+    if (body is! List) {
+      throw const AppFailure(
+        FailureKind.invalidResponse,
+        detail: 'Elementtypen sind kein Array',
+      );
+    }
+    return {for (final t in body.map(ElementType.tryParse).nonNulls) t.key: t};
   }
 
   /// `GET /api/packages/:id` mit optionalem `If-None-Match`.

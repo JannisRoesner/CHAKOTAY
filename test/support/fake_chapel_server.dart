@@ -32,6 +32,61 @@ class FakeChapelServer {
   final Map<int, FakePackage> packages = {};
   final Map<String, FakeUser> _sessions = {};
   final List<String> requests = [];
+
+  /// Antwort von `GET /api/element-types` (wie CHAPEL nach Migration 0007,
+  /// plus ein selbst angelegter Typ).
+  List<Map<String, Object?>> elementTypes = [
+    {
+      'key': 'songSlot',
+      'label': 'Lied',
+      'defaultLabel': 'Lied',
+      'fixed': false,
+      'color': 'primary',
+      'icon': 'i-lucide-music',
+      'sortOrder': 0,
+      'builtin': true,
+    },
+    {
+      'key': 'liturgy',
+      'label': 'Liturgie',
+      'defaultLabel': 'Liturgieelement',
+      'fixed': true,
+      'color': 'secondary',
+      'icon': 'i-lucide-lock',
+      'sortOrder': 1,
+      'builtin': true,
+    },
+    {
+      'key': 'voluntary',
+      'label': 'Ein-/Ausgang',
+      'defaultLabel': 'Eingangsmusik',
+      'fixed': false,
+      'color': 'neutral',
+      'icon': 'i-lucide-door-open',
+      'sortOrder': 2,
+      'builtin': false,
+    },
+    {
+      'key': 'communion',
+      'label': 'Abendmahl-Musik',
+      'defaultLabel': 'Musik zum Abendmahl',
+      'fixed': false,
+      'color': 'neutral',
+      'icon': 'i-lucide-wine',
+      'sortOrder': 3,
+      'builtin': false,
+    },
+    {
+      'key': 't-1a2b3c4d',
+      'label': 'Kinderchor',
+      'defaultLabel': 'Kinderchor',
+      'fixed': false,
+      'color': 'info',
+      'icon': 'i-lucide-baby',
+      'sortOrder': 4,
+      'builtin': false,
+    },
+  ];
   int _counter = 0;
 
   /// Bricht Downloads nach so vielen Bytes ab (simuliert Verbindungsabbruch).
@@ -102,6 +157,9 @@ class FakeChapelServer {
       }
       if (user == null) return _error(res, 401, 'Nicht angemeldet');
 
+      if (path == '/api/element-types') {
+        return _json(res, elementTypes);
+      }
       if (path == '/api/packages') {
         final list = packages.values.toList()
           ..sort(
